@@ -35,7 +35,7 @@ const POLAROIDS: PolaroidItem[] = [
     washiColor: "bg-tertiary-fixed/70",
     washiRotate: "rotate-2",
     rotation: "rotate-3",
-    date: "Bimps 3",
+    date: "Ife",
   },
   {
     id: 3,
