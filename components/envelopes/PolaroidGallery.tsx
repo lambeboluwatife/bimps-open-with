@@ -2,11 +2,13 @@
 
 import { useState } from "react";
 import Image from "next/image";
-import { ArrowRight, X } from "lucide-react";
+import { ArrowRight, X, Play, Film } from "lucide-react";
 
 interface PolaroidItem {
   id: number;
   image: string;
+  video?: string;
+  isVideo?: boolean;
   caption: string;
   washiColor: string;
   washiRotate: string;
@@ -17,39 +19,103 @@ interface PolaroidItem {
 const POLAROIDS: PolaroidItem[] = [
   {
     id: 1,
-    image: "/polaroids/polaroid-espresso.jpg",
-    caption: "Sunday morning espresso",
+    image: "/polaroids/hot.png",
+    video: "/videos/letter-3.mp4",
+    isVideo: true,
+    caption: "A fun day at your place",
     washiColor: "bg-secondary-container/80",
     washiRotate: "-rotate-3",
     rotation: "-rotate-2",
-    date: "A quiet Parisian morning",
+    date: "A favourite day",
   },
   {
     id: 2,
-    image: "/polaroids/polaroid-beach.jpg",
-    caption: "The golden hour beach walk",
+    image: "/polaroids/bimps3.jpeg",
+    caption: "Your cuteness is unfair",
     washiColor: "bg-tertiary-fixed/70",
     washiRotate: "rotate-2",
     rotation: "rotate-3",
-    date: "Lavender sky at dusk",
+    date: "Bimps 3",
   },
   {
     id: 3,
-    image: "/polaroids/polaroid-flowers.jpg",
-    caption: "Pressed wildflowers from June",
+    image: "/polaroids/bimps1.jpeg",
+    caption: "My cute wife",
     washiColor: "bg-primary-fixed/80",
     washiRotate: "rotate-1",
     rotation: "-rotate-1",
-    date: "Handpicked with a love note",
+    date: "Your beauty",
   },
   {
     id: 4,
-    image: "/polaroids/polaroid-city.jpg",
-    caption: "Laughing in the drizzle",
+    image: "/polaroids/bimps2.jpeg",
+    caption: "My baby",
     washiColor: "bg-secondary-fixed/80",
     washiRotate: "-rotate-2",
     rotation: "rotate-2",
-    date: "Warm golden city lights",
+    date: "Love of Tife's life",
+  },
+  {
+    id: 5,
+    image: "/polaroids/fun-day.png",
+    video: "/videos/fun-day.mp4",
+    isVideo: true,
+    caption: "cutiepie",
+    washiColor: "bg-secondary-fixed/80",
+    washiRotate: "-rotate-2",
+    rotation: "rotate-2",
+    date: "You're so cute",
+  },
+  {
+    id: 6,
+    image: "/polaroids/bimps6.jpeg",
+    caption: "My wifey",
+    washiColor: "bg-secondary-fixed/80",
+    washiRotate: "-rotate-2",
+    rotation: "rotate-2",
+    date: "Looking good",
+  },
+  {
+    id: 7,
+    image: "/polaroids/gist1.png",
+    video: "/videos/gist.mp4",
+    isVideo: true,
+    caption: "More of this please",
+    washiColor: "bg-secondary-fixed/80",
+    washiRotate: "-rotate-2",
+    rotation: "rotate-2",
+    date: "That day you sent this",
+  },
+  {
+    id: 8,
+    image: "/polaroids/gist2.png",
+    video: "/videos/gist2.mp4",
+    isVideo: true,
+    caption: "You're such a tease",
+    washiColor: "bg-secondary-fixed/80",
+    washiRotate: "-rotate-2",
+    rotation: "rotate-2",
+    date: "Teasing",
+  },
+  {
+    id: 9,
+    image: "/polaroids/gist3.png",
+    video: "/videos/gist3.mp4",
+    isVideo: true,
+    caption: "Looking good as always",
+    washiColor: "bg-secondary-fixed/80",
+    washiRotate: "-rotate-2",
+    rotation: "rotate-2",
+    date: "Always a vibe",
+  },
+  {
+    id: 10,
+    image: "/polaroids/bimps5.jpeg",
+    caption: "I miss you like crazy",
+    washiColor: "bg-secondary-fixed/80",
+    washiRotate: "-rotate-2",
+    rotation: "rotate-2",
+    date: "Thinking of you",
   },
 ];
 
@@ -93,6 +159,13 @@ export default function PolaroidGallery() {
                 sizes="(max-width: 768px) 50vw, 25vw"
                 className="object-cover group-hover:scale-105 transition-transform duration-500"
               />
+              {item.isVideo && (
+                <div className="absolute inset-0 bg-black/20 flex items-center justify-center">
+                  <div className="w-7 h-7 rounded-full bg-white/90 text-primary flex items-center justify-center shadow-md group-hover:scale-110 transition-transform">
+                    <Play className="w-3.5 h-3.5 fill-current ml-0.5" />
+                  </div>
+                </div>
+              )}
             </div>
 
             <p className="font-body-sm text-body-sm text-center text-on-surface italic">
@@ -102,7 +175,7 @@ export default function PolaroidGallery() {
         ))}
       </div>
 
-      {/* Lightbox Photo Preview Modal */}
+      {/* Lightbox Photo/Video Preview Modal */}
       {selectedPhoto && (
         <div
           role="dialog"
@@ -116,17 +189,28 @@ export default function PolaroidGallery() {
           >
             <button
               onClick={() => setSelectedPhoto(null)}
-              className="absolute top-2 right-2 w-8 h-8 rounded-full bg-surface-container hover:bg-surface-container-high flex items-center justify-center text-primary transition-colors cursor-pointer"
+              className="absolute top-2 right-2 w-8 h-8 rounded-full bg-surface-container hover:bg-surface-container-high flex items-center justify-center text-primary transition-colors cursor-pointer z-20"
             >
               <X className="w-4 h-4" />
             </button>
-            <div className="relative aspect-square w-full rounded-xs overflow-hidden mb-3">
-              <Image
-                src={selectedPhoto.image}
-                alt={selectedPhoto.caption}
-                fill
-                className="object-cover"
-              />
+            <div className="relative aspect-square w-full rounded-xs overflow-hidden mb-3 bg-black">
+              {selectedPhoto.isVideo && selectedPhoto.video ? (
+                <video
+                  src={selectedPhoto.video}
+                  poster={selectedPhoto.image}
+                  controls
+                  autoPlay
+                  playsInline
+                  className="w-full h-full object-cover"
+                />
+              ) : (
+                <Image
+                  src={selectedPhoto.image}
+                  alt={selectedPhoto.caption}
+                  fill
+                  className="object-cover"
+                />
+              )}
             </div>
             <p className="font-headline-sm text-headline-sm italic text-secondary">
               {selectedPhoto.caption}

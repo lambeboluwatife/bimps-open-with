@@ -16,11 +16,14 @@ export interface Letter {
   quote?: string;
   contentPart1: string[];
   hasPolaroid?: boolean;
+  mediaType?: "image" | "video";
   polaroidImg?: string;
+  polaroidVideo?: string;
   polaroidCaption?: string;
   contentPart2?: string[];
   hasVoiceNote?: boolean;
   audioDuration?: string;
+  audioSrc?: string;
   senderName?: string;
 }
 
@@ -39,21 +42,25 @@ export const LETTERS_DATA: Letter[] = [
     sealColor: "#E5C281",
     sealIcon: "heart",
     rotation: -2,
-    quote: "Sometimes I wish I could put into words exactly what you mean to me.",
+    quote:
+      "Sometimes I wish I could put into words exactly what you mean to me.",
     contentPart1: [
       "On days when the world feels too loud or we're miles apart, I want you to hold onto this truth: you are my home, my calm, and my favorite adventure.",
-      "Whenever you miss me, close your eyes and remember the warmth of that evening on the coast... the gentle chill in the ocean breeze and how completely safe everything felt wrapped in your arms.",
+      "Whenever you miss me, close your eyes and remember the warmth of me... the gentle chill you fell and how completely safe everything felt wrapped in your arms.",
     ],
     hasPolaroid: true,
-    polaroidImg: "/polaroids/polaroid-bluff.jpg",
-    polaroidCaption: "Our gentle memory — sunset by the ocean",
+    mediaType: "video",
+    polaroidVideo: "/videos/letter-1.mp4",
+    polaroidImg: "/polaroids/bimps1.jpeg",
+    polaroidCaption: "Our gentle memory — alone in your arms",
     contentPart2: [
       "No matter how chaotic the week becomes, or how far the commute pulls us, that sunset never ended for me. I keep it folded right inside my chest.",
       "Before you fold this note away, there is one little thing I needed you to hear in my own voice today.",
     ],
     hasVoiceNote: true,
     audioDuration: "1:45",
-    senderName: "Bolu",
+    audioSrc: "/audio/letter-1-voice.ogg",
+    senderName: "Tife",
   },
   {
     id: "sad",
@@ -71,18 +78,20 @@ export const LETTERS_DATA: Letter[] = [
     rotation: 2,
     quote: "It is completely okay to have gentle, quiet, slow days.",
     contentPart1: [
-      "Wrap yourself in that soft beige knit blanket you love, drink some warm chamomile tea, and remember that tomorrow arrives completely fresh.",
+      "Wrap yourself in that soft hoodie you love, drink some warm tea, and remember that tomorrow arrives completely fresh.",
       "You don't have to be strong or smiling every minute of every day. In my eyes, you are just as precious on the cloudy afternoons as you are in the sunshine.",
     ],
     hasPolaroid: true,
-    polaroidImg: "/polaroids/polaroid-flowers.jpg",
-    polaroidCaption: "Wildflowers & warm morning tea",
+    mediaType: "video",
+    polaroidVideo: "/videos/goofing.mp4",
+    polaroidImg: "/polaroids/owanbe.jpeg",
+    polaroidCaption: "Goofing around",
     contentPart2: [
       "I am holding your hand in spirit through every heavy thought. Take a long, deep breath and let your shoulders drop.",
       "You are safe, you are cherished, and I will always be right here whenever you need me.",
     ],
     hasVoiceNote: false,
-    senderName: "Bolu",
+    senderName: "Tife",
   },
   {
     id: "smile",
@@ -99,20 +108,22 @@ export const LETTERS_DATA: Letter[] = [
     sealColor: "#633945",
     sealIcon: "smile",
     rotation: -1,
-    quote: "Remember that late Tuesday evening when the bakery ran out of napkins?",
+    quote: "Remember that late evening at your house?",
     contentPart1: [
-      "It started pouring unexpectedly, and we got completely soaked trying to shield that tiny cardboard box of raspberry pastries from the storm!",
-      "You laughed so hard under that shop awning that your eyes crinkled in that exact irresistible way I adore. We looked like two drenched sea otters, and yet it was the happiest ten minutes of my entire month.",
+      "After beating me at Ludo, you took my phone and started making all these weird videos, I pretended that I wasn't interested, but all I was doing was watching you smile and happy.",
+      "I made a joke and you laughed so hard in the dining room awning that your eyes crinkled in that exact irresistible way I adore. We looked like two lover doves, and yet it was the happiest ten minutes of my entire month.",
     ],
     hasPolaroid: true,
-    polaroidImg: "/polaroids/polaroid-espresso.jpg",
-    polaroidCaption: "Sunday morning espresso & endless laughter",
+    mediaType: "video",
+    polaroidVideo: "/videos/letter-3.mp4",
+    polaroidImg: "/polaroids/bimps2.jpeg",
+    polaroidCaption: "Our silly videos together & endless laughter",
     contentPart2: [
       "Did you know that your smile is literally my favorite sight in the whole universe? It turns ordinary gray days into warm golden poetry.",
       "Consider this your official, non-negotiable reminder that you are deeply adored.",
     ],
     hasVoiceNote: false,
-    senderName: "Bolu",
+    senderName: "Tife",
   },
   {
     id: "doubt",
@@ -139,7 +150,7 @@ export const LETTERS_DATA: Letter[] = [
       "I believe in you with every fiber of my being.",
     ],
     hasVoiceNote: false,
-    senderName: "Bolu",
+    senderName: "Tife",
   },
   {
     id: "sleep",
@@ -157,18 +168,16 @@ export const LETTERS_DATA: Letter[] = [
     rotation: -2,
     quote: "Close your eyes. Listen to the steady rhythm of the quiet night.",
     contentPart1: [
-      "Imagine us resting together on the hillside, listening to the crickets under a quiet canopy of midnight stars. Feel my fingers gently running through your hair.",
+      "Imagine us resting together on the bed, listening to your favorite music under the blankets. Feel my fingers gently running through your hair.",
       "Everything that made you anxious today can wait until tomorrow. The night was made for rest, for healing, and for stillness.",
     ],
-    hasPolaroid: true,
-    polaroidImg: "/polaroids/polaroid-city.jpg",
     polaroidCaption: "Midnight city reflections & cozy silence",
     contentPart2: [
       "Rest your tired mind, my love. Wrap yourself tight and let tomorrow take care of itself.",
       "I am wishing you the sweetest, gentlest dreams.",
     ],
     hasVoiceNote: false,
-    senderName: "Bolu",
+    senderName: "Tife",
   },
   {
     id: "loved",
@@ -194,7 +203,7 @@ export const LETTERS_DATA: Letter[] = [
       "Never question your place in my world: you are at the absolute center of it, today and every single day that follows.",
     ],
     hasVoiceNote: false,
-    senderName: "Bolu",
+    senderName: "Tife",
   },
   {
     id: "remember",
@@ -210,19 +219,19 @@ export const LETTERS_DATA: Letter[] = [
     sealColor: "#ffffff",
     sealIcon: "camera",
     rotation: -3,
-    quote: "Looking back at our very first trip up to the coastal bluffs...",
+    quote: "Looking back at our very first trip up to the cinema...",
     contentPart1: [
-      "The wind completely ruined our hair, we got strawberry ice cream all over our jackets, and it remains one of the happiest days of my life.",
-      "Every road trip, every quiet breakfast, every shared playlist — we have built an entire universe together, and every chapter is my favorite.",
+      "The long drive, the silly conversation, that awkward moment when the movie started and we were still trying to get comfortable, the way you leaned your head on my shoulder as we watched that movie. It remains one of the happiest days of my life.",
+      "Every movie we've watched, every quiet dinner, every shared memories, we have built an entire universe together, and every chapter is my favorite.",
     ],
     hasPolaroid: true,
-    polaroidImg: "/polaroids/polaroid-beach.jpg",
-    polaroidCaption: "The golden hour beach walk we will never forget",
+    polaroidImg: "/polaroids/cinema1.jpeg",
+    polaroidCaption: "You at the restuarant",
     contentPart2: [
-      "Take a look at the photograph tucked inside this note. May it bring back all the warmth, the salt air, and the feeling of holding hands by the water.",
+      "Take a look at the photograph tucked inside this note. May it bring back all the warmth, the sound of my laughter, and the feeling of us being happy together.",
     ],
     hasVoiceNote: false,
-    senderName: "Bolu",
+    senderName: "Tife",
   },
   {
     id: "last",
@@ -244,7 +253,9 @@ export const LETTERS_DATA: Letter[] = [
       "You have seen how deeply and steadily my heart beats for you in every circumstance. My promise to you is unconditional: in sunny mornings, quiet doubts, joyful laughter, and all the years still waiting for us, you are my home.",
     ],
     hasPolaroid: true,
-    polaroidImg: "/polaroids/polaroid-bluff.jpg",
+    mediaType: "video",
+    polaroidVideo: "/videos/hot.mp4",
+    polaroidImg: "/polaroids/bimps3.jpeg",
     polaroidCaption: "Forever and always, by your side",
     contentPart2: [
       "Happy Birthday, my love! May this year be filled with all the wonder and peace you deserve.",
@@ -252,7 +263,8 @@ export const LETTERS_DATA: Letter[] = [
     ],
     hasVoiceNote: true,
     audioDuration: "2:10",
-    senderName: "Bolu",
+    audioSrc: "/audio/letter-8-voice.ogg",
+    senderName: "Tife",
   },
 ];
 

@@ -8,12 +8,7 @@ import EnvelopeOpenedView from "@/components/envelopes/EnvelopeOpenedView";
 import PolaroidGallery from "@/components/envelopes/PolaroidGallery";
 import FloatingMusicPlayer from "@/components/envelopes/FloatingMusicPlayer";
 import { letters, Letter } from "@/data/letters";
-import {
-  Heart,
-  Sparkles,
-  Lock,
-  RotateCcw,
-} from "lucide-react";
+import { Heart, Sparkles, Lock, RotateCcw } from "lucide-react";
 
 export default function EnvelopesPage() {
   const [selectedLetter, setSelectedLetter] = useState<Letter | null>(null);
@@ -38,18 +33,15 @@ export default function EnvelopesPage() {
 
   // Check if all regular envelopes before the final one have been opened
   const regularLetters = letters.filter(
-    (l) => l.type !== "final" && l.id !== "last"
+    (l) => l.type !== "final" && l.id !== "last",
   );
   const allOthersOpened = regularLetters.every((l) =>
-    openedLetters.includes(l.id)
+    openedLetters.includes(l.id),
   );
 
   const handleOpenLetter = (letter: Letter) => {
     // If it's the final envelope and not all others are opened
-    if (
-      (letter.type === "final" || letter.id === "last") &&
-      !allOthersOpened
-    ) {
+    if ((letter.type === "final" || letter.id === "last") && !allOthersOpened) {
       setLockedToast("Come back after opening the others ❤️");
       setTimeout(() => setLockedToast(null), 3500);
       return;
@@ -86,7 +78,7 @@ export default function EnvelopesPage() {
         (l) =>
           l.type !== "final" &&
           l.id !== "last" &&
-          !openedLetters.includes(l.id)
+          !openedLetters.includes(l.id),
       );
       nextLetter = firstUnopened || letters[0];
     }
@@ -97,7 +89,7 @@ export default function EnvelopesPage() {
   const handleResealLetters = () => {
     if (
       window.confirm(
-        "Would you like to seal all letters back up in the keepsake box?"
+        "Would you like to seal all letters back up in the keepsake box?",
       )
     ) {
       setOpenedLetters([]);
@@ -111,9 +103,7 @@ export default function EnvelopesPage() {
   };
 
   const filteredLetters =
-    activeFilter === "photos"
-      ? letters.filter((l) => l.hasPolaroid)
-      : letters;
+    activeFilter === "photos" ? letters.filter((l) => l.hasPolaroid) : letters;
 
   const openedCount = openedLetters.length;
   const progressRatio = Math.round((openedCount / letters.length) * 100);
@@ -148,7 +138,7 @@ export default function EnvelopesPage() {
             <EnvelopeOpenedView
               letter={selectedLetter}
               currentIndex={letters.findIndex(
-                (l) => l.id === selectedLetter.id
+                (l) => l.id === selectedLetter.id,
               )}
               totalLetters={letters.length}
               onBack={() => setSelectedLetter(null)}
@@ -288,9 +278,7 @@ export default function EnvelopesPage() {
                       isLocked={isLocked}
                       onOpen={handleOpenLetter}
                       onLockedClick={() => {
-                        setLockedToast(
-                          "Come back after opening the others ❤️"
-                        );
+                        setLockedToast("Come back after opening the others ❤️");
                         setTimeout(() => setLockedToast(null), 3500);
                       }}
                     />

@@ -28,13 +28,16 @@ export default function AudioPlayer() {
 
       // Romantic music box notes (frequencies in Hz)
       const melody = [
-        659.25, 783.99, 987.77, 1046.5, 1174.66, 987.77, 783.99, 659.25,
-        698.46, 880.0, 1046.5, 880.0, 698.46, 783.99, 987.77, 659.25,
+        659.25, 783.99, 987.77, 1046.5, 1174.66, 987.77, 783.99, 659.25, 698.46,
+        880.0, 1046.5, 880.0, 698.46, 783.99, 987.77, 659.25,
       ];
       let noteIndex = 0;
 
       const playNextNote = () => {
-        if (!audioContextRef.current || audioContextRef.current.state === "closed") {
+        if (
+          !audioContextRef.current ||
+          audioContextRef.current.state === "closed"
+        ) {
           return;
         }
 
@@ -71,7 +74,10 @@ export default function AudioPlayer() {
       clearTimeout(timerRef.current);
       timerRef.current = null;
     }
-    if (audioContextRef.current && audioContextRef.current.state === "running") {
+    if (
+      audioContextRef.current &&
+      audioContextRef.current.state === "running"
+    ) {
       audioContextRef.current.suspend();
     }
   };
@@ -128,7 +134,7 @@ export default function AudioPlayer() {
 
         <div id="audio-details" className="flex flex-col text-left pr-1.5">
           <span className="font-label-sm text-label-sm text-secondary font-semibold leading-tight">
-            Our song
+            A Gentle Song
           </span>
           <span
             id="audio-status"

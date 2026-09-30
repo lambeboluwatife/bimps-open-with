@@ -18,9 +18,12 @@ export interface LetterData {
   rotation: string;
   isOpened?: boolean;
   hasPolaroid?: boolean;
+  mediaType?: "image" | "video";
   polaroidImg?: string;
+  polaroidVideo?: string;
   polaroidCaption?: string;
   isFinal?: boolean;
+  audioSrc?: string;
   content: string;
 }
 

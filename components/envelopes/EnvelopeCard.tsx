@@ -10,10 +10,12 @@ import {
   Moon,
   Award,
   Camera,
+  Film,
   Lock,
   Mic,
   CheckCheck,
   Sparkles,
+  Play,
 } from "lucide-react";
 
 interface EnvelopeCardProps {
@@ -38,7 +40,9 @@ export default function EnvelopeCard({
   const [showLockedMessage, setShowLockedMessage] = useState(false);
 
   const rotationDeg =
-    letter.rotation !== undefined ? letter.rotation : ROTATIONS[index % ROTATIONS.length];
+    letter.rotation !== undefined
+      ? letter.rotation
+      : ROTATIONS[index % ROTATIONS.length];
 
   const handleClick = () => {
     if (isLocked) {
@@ -110,23 +114,39 @@ export default function EnvelopeCard({
         </div>
       )}
 
-      {/* Peeking Polaroid for Photo Keepsake Envelopes */}
-      {letter.hasPolaroid && !isOpened && letter.polaroidImg && (
-        <div className="absolute -top-9 left-6 w-24 sm:w-28 bg-surface-container-lowest p-1.5 pb-3 shadow-lg rounded-xs transform -rotate-6 group-hover:-translate-y-2.5 transition-transform duration-300 z-10">
-          <div className="absolute -top-2 left-4 w-9 h-2.5 bg-[#edd3d8]/90 rotate-3 shadow-xs" />
-          <div className="w-full h-16 sm:h-18 relative rounded-xs overflow-hidden bg-surface-container">
-            <Image
-              src={letter.polaroidImg}
-              alt={letter.polaroidCaption || "Polaroid keepsake"}
-              fill
-              className="object-cover"
-            />
+      {/* Peeking Polaroid for Photo or Video Keepsake Envelopes */}
+      {letter.hasPolaroid &&
+        !isOpened &&
+        (letter.polaroidImg || letter.polaroidVideo) && (
+          <div className="absolute -top-9 left-6 w-24 sm:w-28 bg-surface-container-lowest p-1.5 pb-3 shadow-lg rounded-xs transform -rotate-6 group-hover:-translate-y-2.5 transition-transform duration-300 z-10">
+            <div className="absolute -top-2 left-4 w-9 h-2.5 bg-[#edd3d8]/90 rotate-3 shadow-xs" />
+            <div className="w-full h-16 sm:h-18 relative rounded-xs overflow-hidden bg-surface-container">
+              {letter.polaroidImg ? (
+                <Image
+                  src={letter.polaroidImg}
+                  alt={letter.polaroidCaption || "Keepsake"}
+                  fill
+                  className="object-cover"
+                />
+              ) : (
+                <div className="w-full h-full bg-[#3F2B32] flex items-center justify-center">
+                  <Film className="w-5 h-5 text-[#FFDEA4]" />
+                </div>
+              )}
+              {(letter.mediaType === "video" || letter.polaroidVideo) && (
+                <div className="absolute inset-0 bg-black/25 flex items-center justify-center">
+                  <div className="w-5 h-5 rounded-full bg-white/90 text-primary flex items-center justify-center shadow-xs">
+                    <Play className="w-2.5 h-2.5 fill-current ml-0.5" />
+                  </div>
+                </div>
+              )}
+            </div>
+            <p className="font-label-sm text-[9px] text-center text-on-surface-variant mt-1 italic truncate">
+              {letter.polaroidCaption ||
+                (letter.mediaType === "video" ? "Video memory" : "Keepsake")}
+            </p>
           </div>
-          <p className="font-label-sm text-[9px] text-center text-on-surface-variant mt-1 italic truncate">
-            {letter.polaroidCaption || "Keepsake"}
-          </p>
-        </div>
-      )}
+        )}
 
       {/* Main Rectangular Envelope Body */}
       <div
@@ -203,19 +223,32 @@ export default function EnvelopeCard({
                 <span>Audio</span>
               </span>
             )}
-            {letter.hasPolaroid && (
-              <span
-                className={`inline-flex items-center gap-1 font-label-sm text-[10px] px-1.5 py-0.5 rounded-full ${
-                  isDark
-                    ? "bg-[#6a3748] text-[#FFDEA4]"
-                    : "bg-tertiary-fixed/40 text-tertiary"
-                }`}
-                title="Includes Polaroid Keepsake"
-              >
-                <Camera className="w-3 h-3" />
-                <span>+1</span>
-              </span>
-            )}
+            {letter.hasPolaroid &&
+              (letter.mediaType === "video" || letter.polaroidVideo ? (
+                <span
+                  className={`inline-flex items-center gap-1 font-label-sm text-[10px] px-1.5 py-0.5 rounded-full ${
+                    isDark
+                      ? "bg-[#6a3748] text-[#FFDEA4]"
+                      : "bg-[#7c4d5c]/15 text-primary"
+                  }`}
+                  title="Includes Video Keepsake"
+                >
+                  <Film className="w-3 h-3 text-primary" />
+                  <span>Video</span>
+                </span>
+              ) : (
+                <span
+                  className={`inline-flex items-center gap-1 font-label-sm text-[10px] px-1.5 py-0.5 rounded-full ${
+                    isDark
+                      ? "bg-[#6a3748] text-[#FFDEA4]"
+                      : "bg-tertiary-fixed/40 text-tertiary"
+                  }`}
+                  title="Includes Polaroid Keepsake"
+                >
+                  <Camera className="w-3 h-3" />
+                  <span>+1</span>
+                </span>
+              ))}
             {isOpened && (
               <span className="font-label-sm text-[10px] text-primary font-medium">
                 Read again
@@ -234,14 +267,20 @@ export default function EnvelopeCard({
             </div>
           ) : isOpened ? (
             <div
-              style={{ backgroundColor: letter.sealBg, color: letter.sealColor }}
+              style={{
+                backgroundColor: letter.sealBg,
+                color: letter.sealColor,
+              }}
               className="w-11 h-11 sm:w-12 sm:h-12 rounded-full shadow-[0_3px_8px_rgba(73,52,59,0.18)] flex items-center justify-center transform transition-transform duration-300 group-hover:scale-105 border-2 border-surface-container-lowest/80 opacity-90"
             >
               <Sparkles className="w-4 h-4" />
             </div>
           ) : (
             <div
-              style={{ backgroundColor: letter.sealBg, color: letter.sealColor }}
+              style={{
+                backgroundColor: letter.sealBg,
+                color: letter.sealColor,
+              }}
               className="w-12 h-12 rounded-full shadow-[0_4px_12px_rgba(73,52,59,0.22)] flex items-center justify-center transform transition-transform duration-300 group-hover:scale-110 border-2 border-white/20"
             >
               {renderSealIcon()}

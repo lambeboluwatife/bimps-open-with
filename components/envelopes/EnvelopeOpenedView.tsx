@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import Image from "next/image";
 import { Letter } from "@/data/letters";
 import {
@@ -15,6 +15,10 @@ import {
   Mail,
   Heart,
   Sparkles,
+  Film,
+  Volume2,
+  VolumeX,
+  Maximize,
 } from "lucide-react";
 
 interface EnvelopeOpenedViewProps {
@@ -36,19 +40,115 @@ export default function EnvelopeOpenedView({
   const [isBookmarked, setIsBookmarked] = useState(false);
 
   // Voice note player state
+  const voiceAudioRef = useRef<HTMLAudioElement>(null);
   const [isPlaying, setIsPlaying] = useState(false);
-  const [seconds, setSeconds] = useState(37);
-  const totalSeconds = 105; // 1:45
+  const [seconds, setSeconds] = useState(0);
+  const [totalSeconds, setTotalSeconds] = useState(105); // 1:45 default
+
+  // Polaroid video player state
+  const videoRef = useRef<HTMLVideoElement>(null);
+  const [isVideoPlaying, setIsVideoPlaying] = useState(false);
+  const [isVideoMuted, setIsVideoMuted] = useState(false);
+  const [videoProgress, setVideoProgress] = useState(0);
+  const [videoDuration, setVideoDuration] = useState(0);
+  const [videoCurrentTime, setVideoCurrentTime] = useState(0);
+
+  // Stop video and voice note when letter changes
+  useEffect(() => {
+    setIsVideoPlaying(false);
+    setVideoProgress(0);
+    setVideoCurrentTime(0);
+    if (videoRef.current) {
+      videoRef.current.pause();
+      videoRef.current.currentTime = 0;
+    }
+
+    setIsPlaying(false);
+    setSeconds(0);
+    if (voiceAudioRef.current) {
+      voiceAudioRef.current.pause();
+      voiceAudioRef.current.currentTime = 0;
+    }
+  }, [letter.id]);
+
+  const toggleVideoPlay = () => {
+    if (!videoRef.current) return;
+    if (isVideoPlaying) {
+      videoRef.current.pause();
+    } else {
+      // Pause voice note if video is playing
+      if (voiceAudioRef.current && isPlaying) {
+        voiceAudioRef.current.pause();
+      }
+      videoRef.current.play().catch(() => {});
+    }
+  };
+
+  const toggleVideoMute = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    if (!videoRef.current) return;
+    const nextMuted = !isVideoMuted;
+    videoRef.current.muted = nextMuted;
+    setIsVideoMuted(nextMuted);
+  };
+
+  const handleVideoTimeUpdate = () => {
+    if (!videoRef.current) return;
+    const current = videoRef.current.currentTime;
+    const dur = videoRef.current.duration || 0;
+    setVideoCurrentTime(current);
+    if (dur > 0) {
+      setVideoProgress((current / dur) * 100);
+    }
+  };
+
+  const handleVideoLoadedMetadata = () => {
+    if (!videoRef.current) return;
+    setVideoDuration(videoRef.current.duration || 0);
+  };
+
+  const handleVideoSeek = (e: React.MouseEvent<HTMLDivElement>) => {
+    e.stopPropagation();
+    if (!videoRef.current || !videoDuration) return;
+    const rect = e.currentTarget.getBoundingClientRect();
+    const clickX = e.clientX - rect.left;
+    const newProgress = Math.max(0, Math.min(1, clickX / rect.width));
+    const newTime = newProgress * videoDuration;
+    videoRef.current.currentTime = newTime;
+    setVideoCurrentTime(newTime);
+    setVideoProgress(newProgress * 100);
+  };
+
+  const toggleVideoFullscreen = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    if (!videoRef.current) return;
+    if (document.fullscreenElement) {
+      document.exitFullscreen().catch(() => {});
+    } else {
+      videoRef.current.requestFullscreen().catch(() => {});
+    }
+  };
+
+  const formatVideoTime = (sec: number) => {
+    if (isNaN(sec) || sec <= 0) return "0:00";
+    const m = Math.floor(sec / 60);
+    const s = Math.floor(sec % 60);
+    return `${m}:${s < 10 ? "0" : ""}${s}`;
+  };
+
+  const isLetterVideo =
+    letter.hasPolaroid &&
+    (letter.mediaType === "video" || Boolean(letter.polaroidVideo));
 
   // Scroll to top when letter changes
   useEffect(() => {
     window.scrollTo({ top: 0, behavior: "smooth" });
   }, [letter.id]);
 
-  // Voice player simulated playback interval
+  // Voice player simulated playback interval fallback (only when no real audioSrc)
   useEffect(() => {
     let interval: NodeJS.Timeout | null = null;
-    if (isPlaying) {
+    if (isPlaying && !letter.audioSrc) {
       interval = setInterval(() => {
         setSeconds((prev) => {
           if (prev >= totalSeconds) {
@@ -62,7 +162,7 @@ export default function EnvelopeOpenedView({
     return () => {
       if (interval) clearInterval(interval);
     };
-  }, [isPlaying, totalSeconds]);
+  }, [isPlaying, totalSeconds, letter.audioSrc]);
 
   const formatTime = (sec: number) => {
     const m = Math.floor(sec / 60);
@@ -70,29 +170,80 @@ export default function EnvelopeOpenedView({
     return `${m}:${s < 10 ? "0" + s : s}`;
   };
 
+  const handleAudioLoadedMetadata = () => {
+    if (
+      voiceAudioRef.current &&
+      !isNaN(voiceAudioRef.current.duration) &&
+      voiceAudioRef.current.duration > 0
+    ) {
+      setTotalSeconds(Math.floor(voiceAudioRef.current.duration));
+    }
+  };
+
+  const handleAudioTimeUpdate = () => {
+    if (voiceAudioRef.current) {
+      setSeconds(Math.floor(voiceAudioRef.current.currentTime));
+    }
+  };
+
+  const handleAudioEnded = () => {
+    setIsPlaying(false);
+    setSeconds(0);
+    if (voiceAudioRef.current) {
+      voiceAudioRef.current.currentTime = 0;
+    }
+  };
+
   const handleTogglePlay = () => {
-    if (seconds >= totalSeconds) {
-      setSeconds(0);
-      setIsPlaying(true);
+    if (voiceAudioRef.current) {
+      if (isPlaying) {
+        voiceAudioRef.current.pause();
+      } else {
+        // Pause video if playing
+        if (videoRef.current && isVideoPlaying) {
+          videoRef.current.pause();
+        }
+        if (voiceAudioRef.current.ended || seconds >= totalSeconds) {
+          voiceAudioRef.current.currentTime = 0;
+          setSeconds(0);
+        }
+        voiceAudioRef.current.play().catch((err) => {
+          console.error("Audio playback error:", err);
+        });
+      }
     } else {
-      setIsPlaying(!isPlaying);
+      if (seconds >= totalSeconds) {
+        setSeconds(0);
+        setIsPlaying(true);
+      } else {
+        setIsPlaying(!isPlaying);
+      }
     }
   };
 
   const handleReplay10 = () => {
-    setSeconds((prev) => Math.max(0, prev - 10));
+    const newSec = Math.max(0, seconds - 10);
+    setSeconds(newSec);
+    if (voiceAudioRef.current) {
+      voiceAudioRef.current.currentTime = newSec;
+    }
   };
 
   const handleWaveformClick = (e: React.MouseEvent<HTMLDivElement>) => {
     const rect = e.currentTarget.getBoundingClientRect();
     const clickX = e.clientX - rect.left;
     const fraction = Math.max(0, Math.min(1, clickX / rect.width));
-    setSeconds(Math.floor(fraction * totalSeconds));
+    const newSec = Math.floor(fraction * totalSeconds);
+    setSeconds(newSec);
+    if (voiceAudioRef.current) {
+      voiceAudioRef.current.currentTime = newSec;
+    }
   };
 
   // 25 waveform heights
   const baseWaveformHeights = [
-    12, 18, 26, 16, 22, 30, 20, 26, 12, 22, 30, 18, 26, 16, 22, 30, 12, 18, 26, 16, 22, 18, 12, 26, 16,
+    12, 18, 26, 16, 22, 30, 20, 26, 12, 22, 30, 18, 26, 16, 22, 30, 12, 18, 26,
+    16, 22, 18, 12, 26, 16,
   ];
 
   return (
@@ -122,7 +273,9 @@ export default function EnvelopeOpenedView({
                 ? "bg-primary text-surface-container-lowest"
                 : "bg-surface-container-low hover:bg-surface-container-high text-primary"
             }`}
-            title={isBookmarked ? "Keepsake preserved" : "Preserve letter state"}
+            title={
+              isBookmarked ? "Keepsake preserved" : "Preserve letter state"
+            }
             type="button"
           >
             <Bookmark
@@ -199,50 +352,149 @@ export default function EnvelopeOpenedView({
             ))}
           </section>
 
-          {/* Embedded Polaroid Photograph */}
-          {letter.hasPolaroid && letter.polaroidImg && (
-            <div className="my-space-xl flex flex-col items-center">
-              <div className="relative group transform -rotate-1 hover:rotate-0 transition-transform duration-500 max-w-[280px] xs:max-w-[320px] sm:max-w-[380px] w-full bg-[#FFFFFF] p-3 sm:p-4 pb-5 sm:pb-6 rounded-sm shadow-[0_12px_28px_rgba(73,52,59,0.18),0_2px_4px_rgba(73,52,59,0.06)] border border-[#edd3d8]/30">
-                {/* Floral Washi Tape Strip */}
-                <div className="absolute -top-3.5 left-1/2 -translate-x-1/2 w-24 sm:w-28 h-6 sm:h-7 z-30 opacity-90 backdrop-blur-[1px] shadow-[0_1px_3px_rgba(0,0,0,0.08)] -rotate-1 overflow-hidden rounded-[1px] bg-gradient-to-r from-[#edd3d8] via-[#f7e4df] to-[#edd3d8] flex items-center justify-center">
-                  <svg
-                    className="w-full h-full opacity-45"
-                    fill="none"
-                    preserveAspectRatio="none"
-                    viewBox="0 0 100 24"
-                  >
-                    <circle cx="15" cy="12" fill="#80515e" r="4" />
-                    <circle cx="13" cy="9" fill="#dda4b2" r="3" />
-                    <circle cx="17" cy="15" fill="#dda4b2" r="3" />
-                    <circle cx="50" cy="12" fill="#854e60" r="5" />
-                    <circle cx="46" cy="8" fill="#f2b7c5" r="3" />
-                    <circle cx="54" cy="16" fill="#f2b7c5" r="3" />
-                    <circle cx="85" cy="12" fill="#80515e" r="4" />
-                  </svg>
-                </div>
-
-                {/* Polaroid Image Frame */}
-                <div className="w-full aspect-square overflow-hidden bg-surface-container-high rounded-[2px] relative shadow-inner">
-                  <Image
-                    src={letter.polaroidImg}
-                    alt={letter.polaroidCaption || "Our memory"}
-                    fill
-                    className="object-cover transition-transform duration-700 group-hover:scale-105"
-                  />
-                  <div className="absolute inset-0 bg-gradient-to-t from-[#28161d]/15 via-transparent to-transparent pointer-events-none" />
-                </div>
-
-                {/* Handwritten Pen Caption */}
-                {letter.polaroidCaption && (
-                  <div className="mt-4 px-1 text-center">
-                    <p className="font-headline-sm text-headline-sm italic text-secondary tracking-normal select-none">
-                      {letter.polaroidCaption}
-                    </p>
+          {/* Embedded Polaroid Photograph or Video Keepsake */}
+          {letter.hasPolaroid &&
+            (letter.polaroidImg || letter.polaroidVideo) && (
+              <div className="my-space-xl flex flex-col items-center">
+                <div className="relative group transform -rotate-1 hover:rotate-0 transition-transform duration-500 max-w-[280px] xs:max-w-[320px] sm:max-w-[380px] w-full bg-[#FFFFFF] p-3 sm:p-4 pb-5 sm:pb-6 rounded-sm shadow-[0_12px_28px_rgba(73,52,59,0.18),0_2px_4px_rgba(73,52,59,0.06)] border border-[#edd3d8]/30">
+                  {/* Floral Washi Tape Strip */}
+                  <div className="absolute -top-3.5 left-1/2 -translate-x-1/2 w-24 sm:w-28 h-6 sm:h-7 z-30 opacity-90 backdrop-blur-[1px] shadow-[0_1px_3px_rgba(0,0,0,0.08)] -rotate-1 overflow-hidden rounded-[1px] bg-gradient-to-r from-[#edd3d8] via-[#f7e4df] to-[#edd3d8] flex items-center justify-center">
+                    <svg
+                      className="w-full h-full opacity-45"
+                      fill="none"
+                      preserveAspectRatio="none"
+                      viewBox="0 0 100 24"
+                    >
+                      <circle cx="15" cy="12" fill="#80515e" r="4" />
+                      <circle cx="13" cy="9" fill="#dda4b2" r="3" />
+                      <circle cx="17" cy="15" fill="#dda4b2" r="3" />
+                      <circle cx="50" cy="12" fill="#854e60" r="5" />
+                      <circle cx="46" cy="8" fill="#f2b7c5" r="3" />
+                      <circle cx="54" cy="16" fill="#f2b7c5" r="3" />
+                      <circle cx="85" cy="12" fill="#80515e" r="4" />
+                    </svg>
                   </div>
-                )}
+
+                  {/* Polaroid Frame (Video or Image) */}
+                  {isLetterVideo ? (
+                    <div className="w-full aspect-square overflow-hidden bg-[#24131A] rounded-[2px] relative shadow-inner group/video select-none">
+                      <video
+                        ref={videoRef}
+                        src={letter.polaroidVideo || letter.polaroidImg}
+                        poster={letter.polaroidImg}
+                        playsInline
+                        loop
+                        muted={isVideoMuted}
+                        onTimeUpdate={handleVideoTimeUpdate}
+                        onLoadedMetadata={handleVideoLoadedMetadata}
+                        onPlay={() => setIsVideoPlaying(true)}
+                        onPause={() => setIsVideoPlaying(false)}
+                        onClick={toggleVideoPlay}
+                        className="w-full h-full object-cover cursor-pointer"
+                      />
+
+                      {/* Badge: Video Keepsake */}
+                      <div className="absolute top-2.5 right-2.5 z-20 flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-[#24131A]/75 backdrop-blur-md text-[10px] text-[#FFDEA4] font-medium shadow-sm pointer-events-none border border-[#FFDEA4]/20">
+                        <Film className="w-3 h-3 text-[#FFDEA4]" />
+                        <span>Video Memory</span>
+                      </div>
+
+                      {/* Center Play Button Overlay when paused */}
+                      {!isVideoPlaying && (
+                        <div
+                          onClick={toggleVideoPlay}
+                          className="absolute inset-0 z-10 bg-black/35 backdrop-blur-[0.5px] flex items-center justify-center cursor-pointer transition-opacity"
+                        >
+                          <button
+                            type="button"
+                            className="w-14 h-14 rounded-full bg-primary/90 hover:bg-primary text-white flex items-center justify-center shadow-[0_4px_20px_rgba(0,0,0,0.45)] transform hover:scale-110 active:scale-95 transition-all cursor-pointer border border-white/40"
+                            aria-label="Play video"
+                          >
+                            <Play className="w-6 h-6 fill-current ml-1" />
+                          </button>
+                        </div>
+                      )}
+
+                      {/* Bottom Controls Bar (Visible on hover or when playing) */}
+                      <div className="absolute inset-x-0 bottom-0 z-20 bg-gradient-to-t from-black/85 via-black/50 to-transparent p-2.5 pt-6 flex flex-col gap-1.5 opacity-0 group-hover/video:opacity-100 transition-opacity duration-300">
+                        {/* Scrubber Progress Bar */}
+                        <div
+                          onClick={handleVideoSeek}
+                          className="w-full h-1.5 bg-white/30 hover:h-2 rounded-full cursor-pointer relative overflow-hidden transition-all"
+                        >
+                          <div
+                            style={{ width: `${videoProgress}%` }}
+                            className="h-full bg-primary rounded-full transition-all duration-100"
+                          />
+                        </div>
+
+                        <div className="flex items-center justify-between text-white text-xs">
+                          <div className="flex items-center gap-2">
+                            <button
+                              type="button"
+                              onClick={toggleVideoPlay}
+                              className="hover:text-[#FFDEA4] transition-colors cursor-pointer"
+                              aria-label={isVideoPlaying ? "Pause" : "Play"}
+                            >
+                              {isVideoPlaying ? (
+                                <Pause className="w-4 h-4 fill-current" />
+                              ) : (
+                                <Play className="w-4 h-4 fill-current" />
+                              )}
+                            </button>
+                            <button
+                              type="button"
+                              onClick={toggleVideoMute}
+                              className="hover:text-[#FFDEA4] transition-colors cursor-pointer"
+                              aria-label={isVideoMuted ? "Unmute" : "Mute"}
+                            >
+                              {isVideoMuted ? (
+                                <VolumeX className="w-4 h-4" />
+                              ) : (
+                                <Volume2 className="w-4 h-4" />
+                              )}
+                            </button>
+                            <span className="font-mono text-[10px] text-white/80">
+                              {formatVideoTime(videoCurrentTime)} /{" "}
+                              {formatVideoTime(videoDuration)}
+                            </span>
+                          </div>
+
+                          <button
+                            type="button"
+                            onClick={toggleVideoFullscreen}
+                            className="hover:text-[#FFDEA4] transition-colors cursor-pointer"
+                            aria-label="Fullscreen"
+                          >
+                            <Maximize className="w-3.5 h-3.5" />
+                          </button>
+                        </div>
+                      </div>
+                    </div>
+                  ) : (
+                    /* Polaroid Image Frame */
+                    <div className="w-full aspect-square overflow-hidden bg-surface-container-high rounded-[2px] relative shadow-inner">
+                      <Image
+                        src={letter.polaroidImg!}
+                        alt={letter.polaroidCaption || "Our memory"}
+                        fill
+                        className="object-cover transition-transform duration-700 group-hover:scale-105"
+                      />
+                      <div className="absolute inset-0 bg-gradient-to-t from-[#28161d]/15 via-transparent to-transparent pointer-events-none" />
+                    </div>
+                  )}
+
+                  {/* Handwritten Pen Caption */}
+                  {letter.polaroidCaption && (
+                    <div className="mt-4 px-1 text-center">
+                      <p className="font-headline-sm text-headline-sm italic text-secondary tracking-normal select-none">
+                        {letter.polaroidCaption}
+                      </p>
+                    </div>
+                  )}
+                </div>
               </div>
-            </div>
-          )}
+            )}
 
           {/* Letter Body Part 2 */}
           {letter.contentPart2 && letter.contentPart2.length > 0 && (
@@ -261,6 +513,20 @@ export default function EnvelopeOpenedView({
           {/* Bespoke Voice Message Player */}
           {(letter.hasVoiceNote || letter.type === "voice") && (
             <div className="my-space-xl bg-surface-container-low/70 rounded-xl p-space-md sm:p-space-lg flex flex-col gap-space-sm shadow-sm border border-primary-fixed/20">
+              {/* Real Audio Element */}
+              {letter.audioSrc && (
+                <audio
+                  ref={voiceAudioRef}
+                  src={letter.audioSrc}
+                  preload="metadata"
+                  onPlay={() => setIsPlaying(true)}
+                  onPause={() => setIsPlaying(false)}
+                  onTimeUpdate={handleAudioTimeUpdate}
+                  onLoadedMetadata={handleAudioLoadedMetadata}
+                  onEnded={handleAudioEnded}
+                />
+              )}
+
               <div className="flex items-center justify-between">
                 <span className="font-headline-sm text-headline-sm italic text-secondary flex items-center gap-space-xs">
                   <Mic className="w-5 h-5 text-primary" />
@@ -295,10 +561,17 @@ export default function EnvelopeOpenedView({
                   >
                     {baseWaveformHeights.map((h, i) => {
                       const progressFrac = seconds / totalSeconds;
-                      const isPast = i / baseWaveformHeights.length <= progressFrac;
+                      const isPast =
+                        i / baseWaveformHeights.length <= progressFrac;
                       // Dynamic wave fluctuation when playing
                       const dynamicHeight = isPlaying
-                        ? Math.max(8, Math.min(32, Math.floor(Math.sin((seconds + i) * 0.7) * 8 + h)))
+                        ? Math.max(
+                            8,
+                            Math.min(
+                              32,
+                              Math.floor(Math.sin((seconds + i) * 0.7) * 8 + h),
+                            ),
+                          )
                         : h;
 
                       return (
@@ -306,9 +579,7 @@ export default function EnvelopeOpenedView({
                           key={i}
                           style={{ height: `${dynamicHeight}px` }}
                           className={`w-1 rounded-full transition-all duration-150 ${
-                            isPast
-                              ? "bg-secondary"
-                              : "bg-secondary/25"
+                            isPast ? "bg-secondary" : "bg-secondary/25"
                           }`}
                         />
                       );
@@ -320,7 +591,11 @@ export default function EnvelopeOpenedView({
                     <span className="text-primary font-medium">
                       {formatTime(seconds)}
                     </span>
-                    <span>{letter.audioDuration || "1:45"}</span>
+                    <span>
+                      {totalSeconds > 0
+                        ? formatTime(totalSeconds)
+                        : letter.audioDuration || "1:45"}
+                    </span>
                   </div>
                 </div>
 
@@ -347,7 +622,7 @@ export default function EnvelopeOpenedView({
                 With all my love,
               </p>
               <p className="font-headline-md text-headline-md italic text-primary pt-1 flex items-center gap-1.5 justify-start sm:justify-end">
-                <span>{letter.senderName || "Bolu"}</span>
+                <span>{letter.senderName || "Tife"}</span>
                 <Heart className="w-5 h-5 text-primary fill-primary" />
               </p>
             </div>

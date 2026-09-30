@@ -28,13 +28,16 @@ export default function FloatingMusicPlayer() {
 
       // Melody notes in Hz: A4, C#5, E5, F#5, E5, C#5, B4, A4...
       const melody = [
-        440.0, 554.37, 659.25, 739.99, 659.25, 554.37, 493.88, 440.0,
-        554.37, 659.25, 880.0, 739.99, 659.25, 554.37, 493.88, 440.0,
+        440.0, 554.37, 659.25, 739.99, 659.25, 554.37, 493.88, 440.0, 554.37,
+        659.25, 880.0, 739.99, 659.25, 554.37, 493.88, 440.0,
       ];
       let noteIndex = 0;
 
       const playNext = () => {
-        if (!audioContextRef.current || audioContextRef.current.state === "closed") {
+        if (
+          !audioContextRef.current ||
+          audioContextRef.current.state === "closed"
+        ) {
           return;
         }
 
@@ -71,7 +74,10 @@ export default function FloatingMusicPlayer() {
       clearTimeout(timerRef.current);
       timerRef.current = null;
     }
-    if (audioContextRef.current && audioContextRef.current.state === "running") {
+    if (
+      audioContextRef.current &&
+      audioContextRef.current.state === "running"
+    ) {
       audioContextRef.current.suspend();
     }
   };
@@ -107,12 +113,12 @@ export default function FloatingMusicPlayer() {
         <div className="flex flex-col text-left min-w-0">
           <div className="flex items-center gap-1">
             <span className="font-label-sm text-[10px] sm:text-[11px] uppercase text-secondary font-semibold">
-              Our Song
+              A simple gesture
             </span>
             <span className="text-[10px] text-tertiary">♪</span>
           </div>
           <span className="font-body-sm text-[11px] sm:text-xs text-on-surface truncate max-w-[95px] xs:max-w-[130px] sm:max-w-[190px]">
-            Until I Found You - Stephen Sanchez
+            For you...
           </span>
         </div>
 
