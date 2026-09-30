@@ -28,16 +28,25 @@ export default function AudioPlayer() {
 
       // Romantic music box notes (frequencies in Hz)
       const melody = [
+<<<<<<< HEAD
         659.25, 783.99, 987.77, 1046.5, 1174.66, 987.77, 783.99, 659.25, 698.46,
         880.0, 1046.5, 880.0, 698.46, 783.99, 987.77, 659.25,
+=======
+        659.25, 783.99, 987.77, 1046.5, 1174.66, 987.77, 783.99, 659.25,
+        698.46, 880.0, 1046.5, 880.0, 698.46, 783.99, 987.77, 659.25,
+>>>>>>> 04add0e1e4961825e25fb8026f0a8f3890c27f1e
       ];
       let noteIndex = 0;
 
       const playNextNote = () => {
+<<<<<<< HEAD
         if (
           !audioContextRef.current ||
           audioContextRef.current.state === "closed"
         ) {
+=======
+        if (!audioContextRef.current || audioContextRef.current.state === "closed") {
+>>>>>>> 04add0e1e4961825e25fb8026f0a8f3890c27f1e
           return;
         }
 
@@ -74,10 +83,14 @@ export default function AudioPlayer() {
       clearTimeout(timerRef.current);
       timerRef.current = null;
     }
+<<<<<<< HEAD
     if (
       audioContextRef.current &&
       audioContextRef.current.state === "running"
     ) {
+=======
+    if (audioContextRef.current && audioContextRef.current.state === "running") {
+>>>>>>> 04add0e1e4961825e25fb8026f0a8f3890c27f1e
       audioContextRef.current.suspend();
     }
   };
@@ -134,7 +147,11 @@ export default function AudioPlayer() {
 
         <div id="audio-details" className="flex flex-col text-left pr-1.5">
           <span className="font-label-sm text-label-sm text-secondary font-semibold leading-tight">
+<<<<<<< HEAD
             A Gentle Song
+=======
+            Our song
+>>>>>>> 04add0e1e4961825e25fb8026f0a8f3890c27f1e
           </span>
           <span
             id="audio-status"

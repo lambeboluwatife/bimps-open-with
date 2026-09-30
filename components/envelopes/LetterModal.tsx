@@ -75,7 +75,10 @@ export default function LetterModal({ letter, onClose }: LetterModalProps) {
             Keepsake Letter
           </span>
           <span className="text-outline-variant font-body-sm">•</span>
-          <span className="font-label-sm text-label-sm text-on-surface-variant" id="modal-date">
+          <span
+            className="font-label-sm text-label-sm text-on-surface-variant"
+            id="modal-date"
+          >
             {letter.date}
           </span>
         </div>
